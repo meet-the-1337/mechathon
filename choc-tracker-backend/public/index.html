@@ -1,0 +1,23 @@
+<input id="name" placeholder="Enter product name"/>
+<button onclick="create()">Generate QR</button>
+
+<div id="result"></div>
+
+<script>
+async function create() {
+  const name = document.getElementById('name').value;
+
+  const res = await fetch('/api/product', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ productName: name })
+  });
+
+  const data = await res.json();
+
+  document.getElementById('result').innerHTML = `
+    <h3>ID: ${data.id}</h3>
+    <img src="${data.qr}" />
+  `;
+}
+</script>

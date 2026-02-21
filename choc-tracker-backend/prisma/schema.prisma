@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PRODUCER
+  MIDDLEMAN
+  CONSUMER
+}
+
+enum ItemType {
+  PRODUCT
+  BOX
+  PALLET
+}
+
+enum ActionType {
+  MANUFACTURED
+  PACKED
+  IN_TRANSIT
+  DELIVERED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  role         Role
+  passwordHash String
+  events       Event[]
+}
+
+model Item {
+  id        String    @id
+  type      ItemType
+  createdAt DateTime  @default(now())
+
+  // Self-referencing hierarchy
+  parentId  String?
+  parent    Item?     @relation("Hierarchy", fields: [parentId], references: [id])
+  children  Item[]    @relation("Hierarchy")
+
+  events    Event[]
+}
+
+model Event {
+  id        String     @id @default(uuid())
+  timestamp DateTime   @default(now())
+  location  String
+  action    ActionType
+
+  itemId    String
+  item      Item       @relation(fields: [itemId], references: [id])
+
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id])
+}
